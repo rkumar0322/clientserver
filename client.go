@@ -13,7 +13,7 @@ import (
 
 var filePath string = "/Users/rahulkumar/go/src/clientserver"
 
-func userInput(input string) string{
+func userInput(input string) string {
 	var response string
 	fmt.Print(input)
 	fmt.Scanln(&response)
@@ -21,7 +21,7 @@ func userInput(input string) string{
 }
 
 func validateUser(user string) bool {
-	file1,err := os.Open(filePath + "/" + user + ".txt")
+	file1, err := os.Open(filePath + "/" + user + ".txt")
 	if err != nil {
 		return false
 	}
@@ -37,8 +37,8 @@ func validateUser(user string) bool {
 	return false
 }
 
-func validateUserServ(c chat.ChatServiceClient,user string) bool {
-	response, err := c.SayHello(context.Background(), &chat.Message{Body: "userExists,"+user})
+func validateUserServ(c chat.ChatServiceClient, user string) bool {
+	response, err := c.SayHello(context.Background(), &chat.Message{Body: "userExists," + user})
 	if err != nil {
 		log.Fatalf("Error when calling SayHello: %s", err)
 	}
@@ -46,9 +46,9 @@ func validateUserServ(c chat.ChatServiceClient,user string) bool {
 }
 
 func writeUser(user string) {
-	file1,err := os.Open(filePath + "/" + user + ".txt")
+	file1, err := os.Open(filePath + "/" + user + ".txt")
 	if err != nil {
-		file1,err = os.Create(filePath + "/" + user + ".txt")
+		file1, err = os.Create(filePath + "/" + user + ".txt")
 		if err != nil {
 			panic("File Not Found")
 		}
@@ -71,7 +71,7 @@ func main() {
 	c := chat.NewChatServiceClient(conn)
 	username := userInput("UserName: ")
 	var firstPass bool
-	if validateUser(username) && validateUserServ(c,username){
+	if validateUser(username) && validateUserServ(c, username) {
 		firstPass = false
 	} else {
 		firstPass = true
@@ -84,7 +84,7 @@ func main() {
 			writeUser(username)
 			firstPass = false
 		} else {
-			str1,err1 = generateInput(username)
+			str1, err1 = generateInput(username)
 			if err1 != nil {
 				continue
 			} else if str1 == "exit" {
@@ -99,23 +99,29 @@ func main() {
 	}
 }
 
-func generateInput(username string) (string,error) {
+func generateInput(username string) (string, error) {
 	initial := userInput("What Do you want to do?: ")
 	if initial == "adduser" {
-		return initial + "," + userInput("Person To Add: "),nil
+		return initial + "," + userInput("Person To Add: "), nil
 	} else if initial == "addchannel" {
-		return initial + "," + username + "," + userInput("Channel Name: ") + "," + userInput("Public? [yes/no]: "),nil
+		return initial + "," + username + "," + userInput("Channel Name: ") + "," + userInput("Public? [yes/no]: "), nil
+	} else if initial == "removechannel" {
+		return initial + "," + username + "," + userInput("Channel Name: "), nil
 	} else if initial == "addusertochannel" {
-		return initial + "," + username + "," + userInput("Person To Add: ") + "," + userInput("Channel Name: "),nil
+		return initial + "," + username + "," + userInput("Person To Add: ") + "," + userInput("Channel Name: "), nil
+	} else if initial == "banuserfromchannel" {
+		return initial + "," + username + "," + userInput("Person To Ban: ") + "," + userInput("Channel Name: "), nil
 	} else if initial == "joinchannel" {
-		return initial + "," + username + "," + userInput("Channel Name: "),nil
+		return initial + "," + username + "," + userInput("Channel Name: "), nil
 	} else if initial == "sendMessage" {
-		return initial + "," + username + "," + userInput("Channel Name: ") + "," + userInput("Message: "),nil
+		return initial + "," + username + "," + userInput("Channel Name: ") + "," + userInput("Message: "), nil
 	} else if initial == "showWorkspace" {
-		return initial + "," + username,nil
+		return initial + "," + username, nil
+	} else if initial == "showChannel" {
+		return initial + "," + username + "," + userInput("What channel do you want to see?"), nil
 	} else if initial == "exit" {
-		return "exit",nil
+		return "exit", nil
 	} else {
-		return "",errors.New("Incorrect")
+		return "", errors.New("Incorrect")
 	}
 }
