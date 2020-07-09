@@ -109,9 +109,15 @@ func generateInput(username string) (string, error) {
 		return initial + "," + username + "," + userInput("Channel Name: "), nil
 	} else if initial == "addusertochannel" {
 		return initial + "," + username + "," + userInput("Person To Add: ") + "," + userInput("Channel Name: "), nil
+	} else if initial == "removeuserfromchannel" {
+		return initial + "," + username + "," + userInput("Person To remove: ") + "," + userInput("Channel Name: "), nil
 	} else if initial == "banuserfromchannel" {
 		return initial + "," + username + "," + userInput("Person To Ban: ") + "," + userInput("Channel Name: "), nil
+	} else if initial == "removebanuser" {
+		return initial + "," + username + "," + userInput("Person To Unban: ") + "," + userInput("Channel Name: "), nil
 	} else if initial == "joinchannel" {
+		return initial + "," + username + "," + userInput("Channel Name: "), nil
+	} else if initial == "leavechannel" {
 		return initial + "," + username + "," + userInput("Channel Name: "), nil
 	} else if initial == "sendMessage" {
 		return initial + "," + username + "," + userInput("Channel Name: ") + "," + userInput("Message: "), nil
