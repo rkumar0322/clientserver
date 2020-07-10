@@ -55,7 +55,7 @@ func (s *Server) SayHello(ctx context.Context, in *Message) (*Message, error) {
 		return s.addUser(msgArr[1])
 	} else if msgArr[0] == "addchannel" {
 		return s.addChannel(msgArr[2], msgArr[1], msgArr[3])
-	} else if msgArr[0] == "removehannel" {
+	} else if msgArr[0] == "removechannel" {
 		return s.removeChannel(msgArr[2], msgArr[1])
 	} else if msgArr[0] == "addusertochannel" {
 		return s.AddUsersToChannelServ(msgArr[1], msgArr[2], msgArr[3])
@@ -114,11 +114,11 @@ func (s *Server) leaveChannelServ(user1 string, channel2 string) (*Message, erro
 	if err != nil {
 		return &Message{Body: "Channel IS NOT VALID"}, nil
 	}
-	user2, pos, err2 := s.grabUser(user1)
+	user2, _, err2 := s.grabUser(user1)
 	if err2 != nil {
 		return &Message{Body: "User IS NOT VALID"}, nil
 	}
-	return channel1.leaveChannel(user2, pos)
+	return channel1.leaveChannel(user2)
 }
 
 func (s *Server) AddUsersToChannelServ(userAdding1 string, userToAdd1 string, channel2 string) (*Message, error) {
@@ -228,9 +228,6 @@ func (s *Server) addChannel(chan1 string, username string, public string) (*Mess
 }
 
 func (s *Server) removeChannel(chan1 string, username string) (*Message, error) {
-	if s.channelExists(chan1) {
-		return &Message{Body: "channel Exists"}, nil
-	}
 	user1, _, err1 := s.grabUser(username)
 	if err1 != nil {
 		return &Message{Body: "User Does Not Exist"}, nil
@@ -239,11 +236,11 @@ func (s *Server) removeChannel(chan1 string, username string) (*Message, error) 
 	if err2 != nil {
 		return &Message{Body: "Channel Does Not exist"}, nil
 	}
-	if ch1.isUserAdmin(user1) {
-		return &Message{Body: "Admins Can only remove the channe"}, nil
+	if ch1.isUserAdmin(user1) == false {
+		return &Message{Body: "Admins Can only remove the channel"}, nil
 	}
 	s.channels, _ = deleteChannel(s.channels, pos)
-	return &Message{Body: "SUCCESS: Creaeted Channel " + chan1}, nil
+	return &Message{Body: "SUCCESS: Deleted Channel " + chan1}, nil
 }
 
 func (s *Server) addUser(user1 string) (*Message, error) {
@@ -340,8 +337,8 @@ func (s *channel) grabUser(user1 string) (*user, int, error) {
 
 func (s *channel) grabBannedUser(user1 string) (*user, int, error) {
 	for i := 0; i < len(s.banned); i++ {
-		if s.users[i].username == user1 {
-			return s.users[i], i, nil
+		if s.banned[i].username == user1 {
+			return s.banned[i], i, nil
 		}
 	}
 	return nil, -1, errors.New("")
@@ -530,12 +527,12 @@ func (s *channel) toString(user string) string {
 		}
 
 		str += "Admins: \n"
-		for i := 0; i < len(s.users); i++ {
-			str += s.users[i].toString() + "\n"
+		for i := 0; i < len(s.admins); i++ {
+			str += s.admins[i].toString() + "\n"
 		}
 		if s.isUserAdmin(user1) {
 			str += "\nBanned: \n"
-			for i := 0; i < len(s.cm); i++ {
+			for i := 0; i < len(s.banned); i++ {
 				str += s.banned[i].toString() + "\n"
 			}
 		}

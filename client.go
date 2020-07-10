@@ -13,11 +13,12 @@ import (
 
 var filePath string = "/Users/rahulkumar/go/src/clientserver"
 
-func userInput(input string) string {
-	var response string
+func userInput(input string) string{
 	fmt.Print(input)
-	fmt.Scanln(&response)
-	return response
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	line := scanner.Text()
+	return line
 }
 
 func validateUser(user string) bool {
@@ -124,7 +125,7 @@ func generateInput(username string) (string, error) {
 	} else if initial == "showWorkspace" {
 		return initial + "," + username, nil
 	} else if initial == "showChannel" {
-		return initial + "," + username + "," + userInput("What channel do you want to see?"), nil
+		return initial + "," + username + "," + userInput("What channel do you want to see?: "), nil
 	} else if initial == "exit" {
 		return "exit", nil
 	} else {
