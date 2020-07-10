@@ -100,11 +100,11 @@ func (s *Server) toString(user1 string) string {
 func (s *Server) joinChannelServ(user1 string, channel2 string) (*Message, error) {
 	channel1, _, err := s.grabChannel(channel2)
 	if err != nil {
-		return &Message{Body: "User IS NOT VALID"}, nil
+		return &Message{Body: "Channel IS NOT VALID"}, nil
 	}
 	user2, _, err2 := s.grabUser(user1)
 	if err2 != nil {
-		return &Message{Body: "Channel IS NOT VALID"}, nil
+		return &Message{Body: "User IS NOT VALID"}, nil
 	}
 	return channel1.joinChannel(user2)
 }
@@ -112,11 +112,11 @@ func (s *Server) joinChannelServ(user1 string, channel2 string) (*Message, error
 func (s *Server) leaveChannelServ(user1 string, channel2 string) (*Message, error) {
 	channel1, _, err := s.grabChannel(channel2)
 	if err != nil {
-		return &Message{Body: "User IS NOT VALID"}, nil
+		return &Message{Body: "Channel IS NOT VALID"}, nil
 	}
 	user2, pos, err2 := s.grabUser(user1)
 	if err2 != nil {
-		return &Message{Body: "Channel IS NOT VALID"}, nil
+		return &Message{Body: "User IS NOT VALID"}, nil
 	}
 	return channel1.leaveChannel(user2, pos)
 }
@@ -124,7 +124,7 @@ func (s *Server) leaveChannelServ(user1 string, channel2 string) (*Message, erro
 func (s *Server) AddUsersToChannelServ(userAdding1 string, userToAdd1 string, channel2 string) (*Message, error) {
 	channel1, _, err := s.grabChannel(channel2)
 	if err != nil {
-		return &Message{Body: "User IS NOT VALID"}, nil
+		return &Message{Body: "Channel IS NOT VALID"}, nil
 	}
 	userToAdd, _, err2 := s.grabUser(userToAdd1)
 	if err2 != nil {
@@ -141,9 +141,9 @@ func (s *Server) AddUsersToChannelServ(userAdding1 string, userToAdd1 string, ch
 func (s *Server) removeUsersFromChannelServ(userAdding1 string, userToAdd1 string, channel2 string) (*Message, error) {
 	channel1, _, err := s.grabChannel(channel2)
 	if err != nil {
-		return &Message{Body: "User IS NOT VALID"}, nil
+		return &Message{Body: "channel IS NOT VALID"}, nil
 	}
-	userToAdd, pos, err2 := s.grabUser(userToAdd1)
+	userToAdd, _, err2 := s.grabUser(userToAdd1)
 	if err2 != nil {
 		return &Message{Body: "User IS NOT VALID"}, nil
 	}
@@ -152,10 +152,27 @@ func (s *Server) removeUsersFromChannelServ(userAdding1 string, userToAdd1 strin
 	if err3 != nil {
 		return &Message{Body: "User IS NOT VALID"}, nil
 	}
-	return channel1.removeUsersFromChannel(userAdding, userToAdd, pos)
+	return channel1.removeUsersFromChannel(userAdding, userToAdd)
 }
 
 func (s *Server) AddUsersToBannedServ(userAdding1 string, userToAdd1 string, channel2 string) (*Message, error) {
+	channel1, _, err := s.grabChannel(channel2)
+	if err != nil {
+		return &Message{Body: "Channel IS NOT VALID"}, nil
+	}
+	userToAdd, _, err2 := s.grabUser(userToAdd1)
+	if err2 != nil {
+		return &Message{Body: "User IS NOT VALID"}, nil
+	}
+
+	userAdding, _, err3 := s.grabUser(userAdding1)
+	if err3 != nil {
+		return &Message{Body: "User IS NOT VALID"}, nil
+	}
+	return channel1.addUsersToBanned(userAdding, userToAdd)
+}
+
+func (s *Server) removeUsersFromBannedServ(userAdding1 string, userToAdd1 string, channel2 string) (*Message, error) {
 	channel1, _, err := s.grabChannel(channel2)
 	if err != nil {
 		return &Message{Body: "User IS NOT VALID"}, nil
@@ -165,28 +182,11 @@ func (s *Server) AddUsersToBannedServ(userAdding1 string, userToAdd1 string, cha
 		return &Message{Body: "User IS NOT VALID"}, nil
 	}
 
-	userAdding, pos, err3 := s.grabUser(userAdding1)
+	userAdding, _, err3 := s.grabUser(userAdding1)
 	if err3 != nil {
 		return &Message{Body: "User IS NOT VALID"}, nil
 	}
-	return channel1.addUsersToBanned(userAdding, userToAdd, pos)
-}
-
-func (s *Server) removeUsersFromBannedServ(userAdding1 string, userToAdd1 string, channel2 string) (*Message, error) {
-	channel1, _, err := s.grabChannel(channel2)
-	if err != nil {
-		return &Message{Body: "User IS NOT VALID"}, nil
-	}
-	userToAdd, pos, err2 := s.grabUser(userToAdd1)
-	if err2 != nil {
-		return &Message{Body: "User IS NOT VALID"}, nil
-	}
-
-	userAdding, pos, err3 := s.grabUser(userAdding1)
-	if err3 != nil {
-		return &Message{Body: "User IS NOT VALID"}, nil
-	}
-	return channel1.addUsersToBanned(userAdding, userToAdd, pos)
+	return channel1.removeUsersFromBanned(userAdding, userToAdd)
 }
 
 func (s *Server) addMessageServ(user1 string, channel2 string, m string) (*Message, error) {
@@ -291,9 +291,9 @@ func (s *Server) showChannelsToJoin(user1 string) string {
 	return str
 }
 
-func (s *Server) channelExists(user1 string) bool {
+func (s *Server) channelExists(channel1 string) bool {
 	for i := 0; i < len(s.channels); i++ {
-		if s.channels[i].name == user1 {
+		if s.channels[i].name == channel1 {
 			return true
 		}
 	}
@@ -309,18 +309,11 @@ func (s *Server) grabUser(user1 string) (*user, int, error) {
 	return nil, -1, errors.New("")
 }
 
-func (s *channel) grabUser(user1 string) (*user, int, error) {
-	for i := 0; i < len(s.users); i++ {
-		if s.users[i].username == user1 {
-			return s.users[i], i, nil
-		}
-	}
-	return nil, -1, errors.New("")
-}
 
-func (s *Server) grabChannel(user1 string) (*channel, int, error) {
+
+func (s *Server) grabChannel(channel1 string) (*channel, int, error) {
 	for i := 0; i < len(s.channels); i++ {
-		if s.channels[i].name == user1 {
+		if s.channels[i].name == channel1 {
 			return s.channels[i], i, nil
 		}
 	}
@@ -334,6 +327,24 @@ func (s *Server) userExists(user1 string) bool {
 		}
 	}
 	return false
+}
+
+func (s *channel) grabUser(user1 string) (*user, int, error) {
+	for i := 0; i < len(s.users); i++ {
+		if s.users[i].username == user1 {
+			return s.users[i], i, nil
+		}
+	}
+	return nil, -1, errors.New("")
+}
+
+func (s *channel) grabBannedUser(user1 string) (*user, int, error) {
+	for i := 0; i < len(s.banned); i++ {
+		if s.users[i].username == user1 {
+			return s.users[i], i, nil
+		}
+	}
+	return nil, -1, errors.New("")
 }
 
 func (s *channel) isUserInChannel(user1 *user) bool {
@@ -363,6 +374,36 @@ func (s *channel) isUserBanned(user1 *user) bool {
 	return false
 }
 
+func (u *user) toString() string {
+	return u.username + ": " + u.createdtime.Format(time.RFC1123)
+}
+
+func (u *channelMessage) toString() string {
+	return u.username.username + ": " + u.msg
+}
+
+func deleteUser(a []*user, i int) ([]*user, error) {
+	if i < len(a) {
+		copy(a[i:], a[i+1:]) // Shift a[i+1:] left one index.
+		a[len(a)-1] = nil    // Erase last element (write zero value).
+		a = a[:len(a)-1]     // Truncate slice.
+		return a, nil
+	} else {
+		return a, errors.New("Record Not Found")
+	}
+}
+
+func deleteChannel(a []*channel, i int) ([]*channel, error) {
+	if i < len(a) {
+		copy(a[i:], a[i+1:]) // Shift a[i+1:] left one index.
+		a[len(a)-1] = nil    // Erase last element (write zero value).
+		a = a[:len(a)-1]     // Truncate slice.
+		return a, nil
+	} else {
+		return a, errors.New("Record Not Found")
+	}
+}
+
 func (s *channel) addUsersToChannel(userAdding *user, userToAdd *user) (*Message, error) {
 	//checks if the user thats adding someone else is in the channel
 	if s.isUserInChannel(userAdding) == false {
@@ -379,15 +420,14 @@ func (s *channel) addUsersToChannel(userAdding *user, userToAdd *user) (*Message
 	}
 
 	if s.isUserBanned(userToAdd) == true {
-		_, pos, _ := s.grabUser(userToAdd.username)
+		_, pos, _ := s.grabBannedUser(userToAdd.username)
 		s.banned, _ = deleteUser(s.banned, pos)
-		s.users = append(s.users, userToAdd)
 	}
 	s.users = append(s.users, userToAdd)
 	return &Message{Body: "SUCCESS: Added UserToChannel " + userToAdd.username}, nil
 }
 
-func (s *channel) removeUsersFromChannel(userAdding *user, userToAdd *user, pos int) (*Message, error) {
+func (s *channel) removeUsersFromChannel(userAdding *user, userToAdd *user) (*Message, error) {
 	//checks if the user thats adding someone else is in the channel
 	if s.isUserInChannel(userAdding) == false {
 		return &Message{Body: "USER IS NOT VALID"}, nil
@@ -398,14 +438,15 @@ func (s *channel) removeUsersFromChannel(userAdding *user, userToAdd *user, pos 
 		return &Message{Body: "USER IS NOT VALID"}, nil
 	}
 	//checks if the user that will be added to the channel isn't already in the channel
-	if s.isUserInChannel(userToAdd) == true {
+	if s.isUserInChannel(userToAdd) != true {
 		return &Message{Body: "USER IS NOT VALID"}, nil
 	}
+	_,pos,_ := s.grabUser(userToAdd.username)
 	s.users, _ = deleteUser(s.users, pos)
 	return &Message{Body: "SUCCESS: Added UserToChannel " + userToAdd.username}, nil
 }
 
-func (s *channel) addUsersToBanned(userAdding *user, userToAdd *user, pos int) (*Message, error) {
+func (s *channel) addUsersToBanned(userAdding *user, userToAdd *user) (*Message, error) {
 	//checks if the user thats adding someone else is in the channel
 	if s.isUserInChannel(userAdding) == false {
 		return &Message{Body: "USER IS NOT VALID"}, nil
@@ -417,6 +458,7 @@ func (s *channel) addUsersToBanned(userAdding *user, userToAdd *user, pos int) (
 	}
 	//checks if the user that will be added to the channel isn't already in the channel
 	if s.isUserInChannel(userToAdd) == true {
+		_,pos,_ := s.grabUser(userToAdd.username)
 		s.users, _ = deleteUser(s.users, pos)
 	}
 
@@ -427,7 +469,7 @@ func (s *channel) addUsersToBanned(userAdding *user, userToAdd *user, pos int) (
 	return &Message{Body: "SUCCESS: Banned " + userToAdd.username}, nil
 }
 
-func (s *channel) removeUsersFromBanned(userAdding *user, userToAdd *user, pos int) (*Message, error) {
+func (s *channel) removeUsersFromBanned(userAdding *user, userToAdd *user) (*Message, error) {
 	//checks if the user thats adding someone else is in the channel
 	if s.isUserInChannel(userAdding) == false {
 		return &Message{Body: "USER IS NOT VALID"}, nil
@@ -439,6 +481,7 @@ func (s *channel) removeUsersFromBanned(userAdding *user, userToAdd *user, pos i
 	}
 
 	if s.isUserBanned(userToAdd) == true {
+		_,pos,_:=s.grabBannedUser(userToAdd.username)
 		s.banned, _ = deleteUser(s.banned, pos)
 		return &Message{Body: "SUCCESS: UnBanned " + userToAdd.username}, nil
 	}
@@ -457,11 +500,12 @@ func (s *channel) joinChannel(userAdding *user) (*Message, error) {
 	return &Message{Body: "SUCCESS: Added UserToChannel " + userAdding.username}, nil
 }
 
-func (s *channel) leaveChannel(userAdding *user, pos int) (*Message, error) {
+func (s *channel) leaveChannel(userAdding *user) (*Message, error) {
 	//checks if the user thats adding someone else is in the channel
 	if s.isUserInChannel(userAdding) == false {
 		return &Message{Body: "USER IS NOT VALID"}, nil
 	}
+	_,pos,_ := s.grabUser(userAdding.username)
 	s.users, _ = deleteUser(s.users, pos)
 	return &Message{Body: "SUCCESS: Added UserToChannel " + userAdding.username}, nil
 }
@@ -505,32 +549,4 @@ func (s *channel) toString(user string) string {
 	return "INVALID CHANNEL"
 }
 
-func (u *user) toString() string {
-	return u.username + ": " + u.createdtime.Format(time.RFC1123)
-}
 
-func (u *channelMessage) toString() string {
-	return u.username.username + ": " + u.msg
-}
-
-func deleteUser(a []*user, i int) ([]*user, error) {
-	if i < len(a) {
-		copy(a[i:], a[i+1:]) // Shift a[i+1:] left one index.
-		a[len(a)-1] = nil    // Erase last element (write zero value).
-		a = a[:len(a)-1]     // Truncate slice.
-		return a, nil
-	} else {
-		return a, errors.New("Record Not Found")
-	}
-}
-
-func deleteChannel(a []*channel, i int) ([]*channel, error) {
-	if i < len(a) {
-		copy(a[i:], a[i+1:]) // Shift a[i+1:] left one index.
-		a[len(a)-1] = nil    // Erase last element (write zero value).
-		a = a[:len(a)-1]     // Truncate slice.
-		return a, nil
-	} else {
-		return a, errors.New("Record Not Found")
-	}
-}
